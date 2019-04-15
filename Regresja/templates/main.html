@@ -1,0 +1,143 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+
+<body>
+    {% if pokazImportDanych %}
+    <form method="post" enctype="multipart/form-data" class="form-horizontal">
+        {% csrf_token %}
+        <input type="hidden" name="wybor" value="pokazWyniki">
+        <fieldset class=>
+            <!-- Form Name -->
+            <legend>Dane</legend>
+            <div class="form-group">
+                <label for="plik_z_danymi">Wybierz plik z danymi do analizy:</label>
+                <div class="col-md-12">
+                    <input type="file" id="plik_z_danymi" name="plik_z_danymi"">
+                </div>
+            </div>
+            <!-- Text input-->
+            <div class=" form-group">
+                    <label class="col-md-3 control-label" for="textinput">Podaj nr kolumny w której znajduje się
+                        zmienna
+                        objaśniana (licząc od 0)</label>
+                    <div class="col-md-3">
+                        <input id="textinput" value="1" class="form-control input-md" required type="number" min="0"
+                            step="1" name="Zmienna_decyzyjna" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label" for="textinput">Delimiter</label>
+                        <div class="col-md-3">
+                            <input id="textinput" value=";" class="form-control input-md" required type="text"
+                                name="delimiter" required>
+                        </div>
+                    </div>
+        </fieldset>
+        <input type="hidden" name="wybor" value="pokazWyniki">
+        <fieldset>
+            <!-- Form Name -->
+            <legend>Stepwise Regression</legend>
+            <div class="row">
+                <!-- Text input-->
+                <div class="form-group">
+                    <label class="col-md-12 control-label" for="textinput">Wartość p-value poniżej której zmienna
+                        zostanie wprowadzona do modelu</label>
+                    <div class="col-md-6">
+                        <input id="textinput" value="0.01" class="form-control input-md" required type="number" min="0"
+                            max="1" step="0.001" name="treshold_in" required>
+                    </div>
+                </div>
+                <!-- Text input-->
+                <div class="form-group">
+                    <label class="col-md-12 control-label" for="textinput">Wartość p-value powyżej której zmienna
+                        zostanie usunięta z modelu </label>
+                    <div class="col-md-6">
+                        <input id="textinput" value="0.05" class="form-control input-md" required type="number" min="0"
+                            max="1" step="0.001" name="treshold_out" required>
+                    </div>
+                </div>
+                <p class="col-md-12">Zawsze należy ustawić wartość p-value dla ktorych będziemy usuwać zmienne większe
+                    niż p-vlaue dla
+                    którego będziemy zmienne wprowadzać aby uniknąć zapętlenia podczas analizowania zmiennych </p>
+            </div>
+        </fieldset>
+        <fieldset>
+            <!-- Form Name -->
+            <legend>Top X zmiennych</legend>
+            <div class="row">
+                <!-- Text input-->
+                <div class="form-group">
+                    <label class="col-md-12 control-label" for="textinput">Wartość p-value poniżej której zmienna będzie
+                        mogła zostać wprowadzona do modelu</label>
+                    <div class="col-md-6">
+                        <input id="textinput" class="form-control input-md" required type="number" min="0" max="1"
+                            step="0.001" value="0.05" name="treshold_for_top_selection" required>
+                    </div>
+                </div>
+                <!-- Text input-->
+                <div class="form-group">
+                    <label class="col-md-12 control-label" for="textinput">Liczba zmiennych która maksymalnie może
+                        znaleść się w modelu (jeśli liczba zmiennych z p-value mniejszym niż podany powyżej będzie
+                        mniejsza niż liczba w tym polu, kolejne zmienne nie będą dodawane do modelu</label>
+                    <div class="col-md-6">
+                        <input id="textinput" value="3" class="form-control input-md" required type="text"
+                            name="Liczba_zmiennych" required>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <div class="form-group">
+            <label class="col-md-12 control-label"></label>
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary">Zakończ konfiguracje</button>
+            </div>
+        </div>
+    </form>
+    {% endif %}
+    {% if pokazWyniki %}
+    <div class="wyniki">
+        <h2>Udało się zaimportować plik. Jeśli dane zostały poprawnie zaimportowane poniżej zostaną wyświetlone wyniki
+        </h2>
+        <br>
+        <div>
+            <br>
+            {{dane|safe}}
+            <h3>Jako zmienną objaśnianą wybrałeś zmienną:
+                {{target|safe}}
+            </h3>
+        </div>
+        <br>
+        <h1>Wyniki estymacji: </h1>
+        <br>
+        <div class="resultContainer">
+            <h2>Regresja liniowa z wyborem zmiennych metodą stepwise selection</h2>
+
+            {{wynik_stepwise|safe}}
+        </div>
+        <div class="resultContainer">
+            <h2>Regresja liniowa z wyborem 3 zmiennych o największych p-value</h2>
+
+            {{wynik_top|safe}}
+
+
+        </div>
+        <div class="resultContainer">
+            <h2>Regresja liniowa ze wszystkimi dostępnymi zmiennymi</h2>
+            {{wynik_all|safe}}
+        </div>
+    </div>
+    {% endif %}
+
+</body>
+
+</html>
