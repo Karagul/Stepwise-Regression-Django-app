@@ -53,11 +53,22 @@ def stepwise_selection(X, y,
             break
     return included
 
-
 def top_selection(X,y,
                     liczbaZmiennych=2,
                     threshold_in=0.05,
                     verbose=False):
+    """ 
+    Funkcja wykonuje selekcję najlepiej skorelowanych zmiennych
+    na podstawie p-value z statsmodels.api.OLS
+    Argumenty:
+        X - pandas.DataFrame ze zmiennymi objaśniającymi
+        y - Zmienna w postaci listy ze zmienną objaśnianą
+        liczbaZmiennych - maksymalna liczba zmiennych która zostanie wybrana
+        threshold_in - dodaj zmienną jeśli jej p-value < threshold_in
+        verbose - Czy wyświetlić kolejność dodawania/usuwania zmiennych
+    Zwraca: lista wyselekcjonowanych zmiennych
+    Zawsze należy ustawić treshhold_in < treshold_out w celu uniknięcia zapętlenia funkcji.
+    """
     included = list()
     while len(included)<liczbaZmiennych and len(included)<len(X.columns):
         changed=False
@@ -81,10 +92,13 @@ def top_selection(X,y,
 
 def RegresjaLiniowa(X,y):
     """ 
+    Funkcja tworzy liniowy model dla wszystkich zmiennych które zostaną podane w argumencie X.
     Arguments:
-        X - pandas.DataFrame with independent variables
-        y - list-like with the target variable
-    Returns: list of selected features 
+        X - pandas.DataFrame ze zmiennymi objaśniającymi
+        y - Zmienna objaśniana w postaci listy
+    Returns: Podsumowanie modelu
     """
     model = sm.OLS(y, sm.add_constant(X)).fit()
     return model.summary()
+
+
