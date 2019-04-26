@@ -7,6 +7,10 @@ from django.shortcuts import render
 import io
 from . import stepwise_regression as sr
 
+from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
+from django.views import generic
+
 def index(request):
 
     pokazImportDanych=True
@@ -20,6 +24,7 @@ def index(request):
     wynik_all = ''
 
     if request.method == 'POST':
+
         if request.POST['wybor'] == 'pokazWyniki': 
             pokazImportDanych=False
             pokazWyniki=True
@@ -62,3 +67,7 @@ def index(request):
                                         })
 
 
+class SignUp(generic.CreateView):
+    form_class = UserCreationForm
+    success_url = reverse_lazy('login')
+    template_name = 'signup.html'

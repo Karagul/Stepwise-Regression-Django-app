@@ -1,55 +1,12 @@
-{% load static %}
+	{% extends 'base.html' %}
+	
+	{%block content %}
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="description" content="Regression Analisis">
-	<meta name="author" content="Adrian Stępniak">
-
-	<title>Regresja W Django</title>
-
-	<link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
-	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-
-</head>
-
-<body>
-
-	<!-- Navigation -->
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
-		<div class="container">
-			<a class="navbar-brand" href="#">Regresja w Django v.1.0</a>
-			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
-				aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div class="collapse navbar-collapse" id="navbarResponsive">
-				<ul class="navbar-nav ml-auto">
-					<li class="nav-item active">
-						<a class="nav-link" href="#">Nav 1
-							<span class="sr-only">(current)</span>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="#">Nav 2</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="#">Nav 3</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="#">Nav 4</a>
-					</li>
-				</ul>
-			</div>
-		</div>
-	</nav>
 
 	<!-- Page Content -->
-	<div class="container mt-3">
+		{% if user.is_authenticated %}
+		Hi {{ user.username }}!
+			<p><a href="{% url 'logout' %}">logout</a></p>
 		<div class="row">
 			<div class="col-lg-12">
 				{% if pokazImportDanych %}
@@ -187,12 +144,11 @@
 				{% endif %}
 			</div>
 		</div>
-	</div>
+		{% else %}
+			<p>You are not logged in</p>
+			<a href="{% url 'login' %}" class='btn btn-primary'>login</a>
+			<a href="{% url 'signup' %}" class='btn btn-secondary'>sign up</a>
+		{% endif %}
 
-	<!-- Bootstrap core JavaScript -->
-	<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
-	<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
-</body>
-
-</html>
+{% endblock %}
