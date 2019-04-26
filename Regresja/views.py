@@ -1,15 +1,15 @@
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from matplotlib.backends.backend_agg import FigureCanvasAgg
+
 from django.http import HttpResponse
 from django.shortcuts import render
-import io
-from . import stepwise_regression as sr
-
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views import generic
+
+import io
+import pandas as pd
+from . import stepwise_regression as sr
+
+
 
 def index(request):
 
