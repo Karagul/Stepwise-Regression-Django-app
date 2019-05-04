@@ -1,12 +1,8 @@
 	{% extends 'base.html' %}
 	
 	{%block content %}
-
-
 	<!-- Page Content -->
 		{% if user.is_authenticated %}
-		Hi {{ user.username }}!
-			<p><a href="{% url 'logout' %}">logout</a></p>
 		<div class="row">
 			<div class="col-lg-12">
 				{% if pokazImportDanych %}
@@ -112,22 +108,20 @@
 					</div>
 				</form>
 				{% endif %}
+
+
+
 				{% if pokazWyniki %}
 				<div class="wyniki">
-					<h2>Udało się zaimportować plik. Jeśli dane zostały poprawnie zaimportowane poniżej zostaną
-						wyświetlone wyniki
-					</h2>
-					<br>
-					<div>
-						<br>
+					<h2>Udało się zaimportować plik.</h2>
+					<h3>Poniżej zostało wyświetlone podsumowanie danych.</h3>
+					<div class='mt-2 mb-2'>
 						{{dane|safe}}
 						<h3>Jako zmienną objaśnianą wybrałeś zmienną:
 							{{target|safe}}
 						</h3>
 					</div>
-					<br>
 					<h1>Wyniki estymacji: </h1>
-					<br>
 					<div class="resultContainer">
 						<h2>Regresja liniowa z wyborem zmiennych metodą stepwise selection</h2>
 						{{wynik_stepwise|safe}}
@@ -145,9 +139,9 @@
 			</div>
 		</div>
 		{% else %}
-			<p>You are not logged in</p>
-			<a href="{% url 'login' %}" class='btn btn-primary'>login</a>
-			<a href="{% url 'signup' %}" class='btn btn-secondary'>sign up</a>
+			<div class="mt-4 text-center">
+				<h2>Niestety, nie jesteś zalogowany :(</h2>
+			</div>
 		{% endif %}
 
 
