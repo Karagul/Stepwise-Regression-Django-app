@@ -1,24 +1,22 @@
 import pandas as pd
 import statsmodels.api as sm
+import matplotlib.pyplot as plt
 
-def stepwise_selection(X, y, 
+def foreward_selection(X, y, 
                        initial_list=[], 
-                       threshold_in=0.01, 
-                       threshold_out = 0.05, 
+                       threshold_in=0.01,
                        verbose=False):
     """ 
-    Funkcja wykonuje selekcję forward-backward zmiennych 
+    Funkcja wykonuje selekcję forward zmiennych 
     na podstawie p-value z statsmodels.api.OLS
     Argumenty:
-        X - pandas.DataFrame ze zmiennymi objaśniającymi
-        y - Zmienna w postaci listy ze zmienną objaśnianą
+        X - tablica ze zmiennymi objaśniającymi (pandas.Dataframe)
+        y - Zmienna w postaci listy ze zmienną objaśnianą (array)
         initial_list - lista zmiennych które ręcznie wprowadzamy
-            do modelu (nazwy kolumn z tablicy X)
-        threshold_in - dodaj zmienną jeśli jej p-value < threshold_in
-        threshold_out - usuń zmienną jeśli jej its p-value > threshold_out
-        verbose - Czy wyświetlić kolejność dodawania/usuwania zmiennych
+            do modelu (array z nazwami kolumn z tablicy X)
+        threshold_in - dodaj zmienną jeśli jej p-value < threshold_in (decimal)
+        verbose - Czy wyświetlić kolejność dodawania/usuwania zmiennych (boolean)
     Zwraca: lista wyselekcjonowanych zmiennych
-    Zawsze należy ustawić treshhold_in < treshold_out w celu uniknięcia zapętlenia funkcji.
     """
     included = list(initial_list)
     while True:
@@ -36,10 +34,27 @@ def stepwise_selection(X, y,
             changed=True
             if verbose:
                 print('Add  {:30} with p-value {:.6}'.format(best_feature, best_pval))
+        if not changed:
+            break
+    return included
 
-        # backward step
+def backward_selection(X, y, threshold_out = 0.05, verbose=False):
+    """ 
+    Funkcja wykonuje selekcję forward zmiennych 
+    na podstawie p-value z statsmodels.api.OLS
+    Argumenty:
+        X - tablica ze zmiennymi objaśniającymi (pandas.Dataframe)
+        y - Zmienna w postaci listy ze zmienną objaśnianą (array)
+        threshold_out - algorytm usuwa zmienną jeśli jej p-value > threshold_in (decimal)
+        verbose - Czy wyświetlić kolejność dodawania/usuwania zmiennych (boolean)
+    Zwraca: lista wyselekcjonowanych zmiennych
+    """
+    included=list(X.columns)
+    while True:
+        print(included)
         model = sm.OLS(y, sm.add_constant(pd.DataFrame(X[included]))).fit()
         # use all coefs except intercept
+        changed=False
         pvalues = model.pvalues.iloc[1:]
         worst_pval = pvalues.max() # null if pvalues is empty
         if worst_pval > threshold_out:
@@ -95,9 +110,6 @@ def RegresjaLiniowa(X,y):
     Arguments:
         X - pandas.DataFrame ze zmiennymi objaśniającymi
         y - Zmienna objaśniana w postaci listy
-    Returns: Podsumowanie modelu
+    Returns: OLS.fit()
     """
-    model = sm.OLS(y, sm.add_constant(X)).fit()
-    return model.summary()
-
-
+    return sm.OLS(y, sm.add_constant(X)).fit()

@@ -4,15 +4,18 @@ from . import views
 urlpatterns = [
 
     path('',views.index),
-    path('', include('django.contrib.auth.urls')), # new
+    path('', include('django.contrib.auth.urls')),
     path('signup/', views.SignUp.as_view(), name='signup'),
+    path('test/',views.simple),
+    path('dataParameters/',views.dataParameters, name='dataParameters'),
+    path('dataResults/',views.dataResults, name='dataResults')
 ]
 
-# accounts/login/ [name='login']
-# accounts/logout/ [name='logout']
-# accounts/password_change/ [name='password_change']
-# accounts/password_change/done/ [name='password_change_done']
-# accounts/password_reset/ [name='password_reset']
-# accounts/password_reset/done/ [name='password_reset_done']
-# accounts/reset/<uidb64>/<token>/ [name='password_reset_confirm']
-# accounts/reset/done/ [name='password_reset_complete']
+# login/ [name='login']
+# logout/ [name='logout']
+# password_change/ [name='password_change']
+# password_change/done/ [name='password_change_done']
+# password_reset/ [name='password_reset']
+# password_reset/done/ [name='password_reset_done']
+# reset/<uidb64>/<token>/ [name='password_reset_confirm']
+# reset/done/ [name='password_reset_complete']

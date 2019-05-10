@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{%block content %}
+{% if user.is_authenticated %}
+<form method="post" enctype="multipart/form-data" class="form-horizontal">
+    {% csrf_token %}
+    <fieldset>
+        <!-- Form Name -->
+        <legend>Wprowadź parametry</legend>
+        <div class="row">
+            <!-- Text input-->
+            <div class="form-group">
+                <label class="col-md-12 control-label" for="textinput">Wartość p-value poniżej której
+                    zmienna
+                    zostanie wprowadzona do modelu</label>
+                <div class="col-md-6">
+                    <input id="textinput" value="0.01" class="form-control input-md" required type="number" min="0"
+                        max="1" step="0.001" name="treshold_in" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-12 control-label" for="textinput">Wartość p-value powyżej której
+                    zmienna
+                    zostanie usunięta z modelu </label>
+                <div class="col-md-6">
+                    <input id="textinput" value="0.05" class="form-control input-md" required type="number" min="0"
+                        max="1" step="0.001" name="treshold_out" required>
+                </div>
+            </div>
+            <!-- Text input-->
+            <div class="form-group">
+                <label class="col-md-12 control-label" for="textinput">Wartość p-value poniżej której
+                    zmienna będzie
+                    mogła zostać wprowadzona do modelu</label>
+                <div class="col-md-6">
+                    <input id="textinput" class="form-control input-md" required type="number" min="0" max="1"
+                        step="0.001" value="0.05" name="treshold_for_top_selection" required>
+                </div>
+            </div>
+            <!-- Text input-->
+            <div class="form-group">
+                <label class="col-md-12 control-label" for="textinput">Liczba zmiennych która
+                    maksymalnie może
+                    znaleść się w modelu (jeśli liczba zmiennych z p-value mniejszym niż podany powyżej
+                    będzie
+                    mniejsza niż liczba w tym polu, kolejne zmienne nie będą dodawane do modelu</label>
+                <div class="col-md-6">
+                    <input id="textinput" value="3" class="form-control input-md" required type="text"
+                        name="Liczba_zmiennych" required>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+    <div class="form-group">
+        <label class="col-md-12 control-label"></label>
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-primary">Zakończ konfiguracje</button>
+        </div>
+    </div>
+</form>
+{% else %}
+{% include "notLogged.html" %}
+{% endif %}
+
+{%endblock %}

@@ -18,22 +18,18 @@
 </head>
 
 <body>
-
 	<!-- Navigation -->
 	{% block navigation %}
 		{% include "navBar.html" %}
 	{% endblock navigation %}
-
     <main>
-	    <div class="container mt-3">
+	    <div class="container mt-4">
             {% block content %}
             {% endblock %}
-        </div>
+		</div>
     </main>
 	<!-- Bootstrap core JavaScript -->
 	<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 	<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-
 </body>
-
 </html>

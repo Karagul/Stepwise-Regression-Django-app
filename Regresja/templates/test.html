@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+	
+{%block content %}
+
+<h1>zdjecie</h1>
+<img src="data:image/png;base64,{{image_base64}}" alt="some text to display to your users when the image does not show correctly" width=500 height=auto >
+<h2>I druga fota:</h2>
+<img src="data:image/png;base64,{{image_base64_2}}" alt="some text to display to your users when the image does not show correctly" width=500 height=auto >
+
+{{foo|safe}}
+
+
+{% endblock %}
