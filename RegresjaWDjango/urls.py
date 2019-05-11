@@ -23,3 +23,5 @@ urlpatterns = [
 
 ]
 
+handler404 = 'Regresja.views.handler404'
+handler500 = 'Regresja.views.handler500'

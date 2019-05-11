@@ -2,6 +2,57 @@
 
 {%block content %}
 {% if user.is_authenticated %}
+
+<h2>Plik został zaimportowany</h2>
+<p>Zaimportowano {{shape_y}} kolumn oraz {{shape_x}} wierszy</p>
+<p><a href="{% url 'index' %}">Kliknij tu</a>, aby powrócić do poprzedniej strony. </p>
+
+<fieldset>
+<h3>Poniżej znajduje się podsumowanie zmiennych objaśniających</h3>
+
+<p class="thick">
+    Jako zmienną decyzyjną wybrano: {{target_variable}}
+</p>
+{% for variable in dataset_summary %}
+<fieldset>
+    <h4>{{variable.0}}</h4>
+    <div class="table-responsive">
+        <table class="table">
+            <tr>
+                <th>count</th>
+                <th>mean</th>
+                <th>standard error</th>
+                <th>minimum</th>
+                <th>kwantyl 0.25</th>
+                <th>mediana</th>
+                <th>kwantyl 0.75</th>
+                <th>maximum</th>
+            </tr>
+            <tr>
+                <td>{{variable.1}}</td>
+                <td>{{variable.2}}</td>
+                <td>{{variable.3}}</td>
+                <td>{{variable.4}}</td>
+                <td>{{variable.5}}</td>
+                <td>{{variable.6}}</td>
+                <td>{{variable.7}}</td>
+                <td>{{variable.8}}</td>
+            </tr>
+            <tr>
+
+            </tr>
+        </table>
+        <form method="post" enctype="multipart/form-data" class="form-horizontal">
+            {% csrf_token %}
+            <input type="hidden" id="graph" name="graph" value="{{variable.0}}">
+            <button type="submit" class="primary">Wykres</button>
+        </form>
+    </div>
+</fieldset>
+{% endfor %}
+</fieldset>
+
+
 <form method="post" enctype="multipart/form-data" class="form-horizontal">
     {% csrf_token %}
     <fieldset>

@@ -3,10 +3,9 @@ from . import views
 
 urlpatterns = [
 
-    path('',views.index),
+    path('',views.index, name='index'),
     path('', include('django.contrib.auth.urls')),
     path('signup/', views.SignUp.as_view(), name='signup'),
-    path('test/',views.simple),
     path('dataParameters/',views.dataParameters, name='dataParameters'),
     path('dataResults/',views.dataResults, name='dataResults')
 ]

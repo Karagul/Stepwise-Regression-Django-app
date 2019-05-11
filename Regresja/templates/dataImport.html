@@ -10,19 +10,16 @@
         <div class="form-group">
             <label for="plik_z_danymi">Wybierz plik z danymi do analizy:</label>
             <div class="col-md-12">
-                <input type="file" id="plik_z_danymi" name="plik_z_danymi" required>
+                <input type="file" accept=".xls,.xlsx,.csv,.json,.txt" id="plik_z_danymi" name="plik_z_danymi" required>
             </div>
         </div>
         <!-- Text input-->
         <div class=" row">
             <div class=" form-group col-md-8">
                 <label class="control-label" for="textinput">Podaj nr kolumny w której
-                    znajduje
-                    się
-                    zmienna
-                    objaśniana (licząc od 0)</label>
+                    znajduje się zmienna objaśniana (licząc od 0)</label>
                 <div>
-                    <input id="textinput" value="1" class="form-control input-md" required type="number" min="0"
+                    <input id="textinput" value="0" class="form-control input-md" required type="number" min="0"
                         step="1" name="Zmienna_decyzyjna" required>
                 </div>
             </div>

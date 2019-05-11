@@ -1,11 +1,9 @@
 import pandas as pd
 import statsmodels.api as sm
-import matplotlib.pyplot as plt
 
 def foreward_selection(X, y, 
                        initial_list=[], 
-                       threshold_in=0.01,
-                       verbose=False):
+                       threshold_in=0.01):
     """ 
     Funkcja wykonuje selekcję forward zmiennych 
     na podstawie p-value z statsmodels.api.OLS
@@ -32,13 +30,11 @@ def foreward_selection(X, y,
             best_feature = new_pval.idxmin()
             included.append(best_feature)
             changed=True
-            if verbose:
-                print('Add  {:30} with p-value {:.6}'.format(best_feature, best_pval))
         if not changed:
             break
     return included
 
-def backward_selection(X, y, threshold_out = 0.05, verbose=False):
+def backward_selection(X, y, threshold_out = 0.05):
     """ 
     Funkcja wykonuje selekcję forward zmiennych 
     na podstawie p-value z statsmodels.api.OLS
@@ -61,16 +57,13 @@ def backward_selection(X, y, threshold_out = 0.05, verbose=False):
             changed=True
             worst_feature = pvalues.idxmax()
             included.remove(worst_feature)
-            if verbose:
-                print('Drop {:30} with p-value {:.6}'.format(worst_feature, worst_pval))
         if not changed:
             break
     return included
 
 def top_selection(X,y,
                     liczbaZmiennych=2,
-                    threshold_in=0.05,
-                    verbose=False):
+                    threshold_in=0.05):
     """ 
     Funkcja wykonuje selekcję najlepiej skorelowanych zmiennych
     na podstawie p-value z statsmodels.api.OLS
@@ -96,8 +89,6 @@ def top_selection(X,y,
             best_feature = new_pval.idxmin()
             included.append(best_feature)
             changed=True
-            if verbose:
-                print('Add  {:30} with p-value {:.6}'.format(best_feature, best_pval))
         if not changed:
             break
     return included

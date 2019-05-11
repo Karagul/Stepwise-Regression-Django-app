@@ -22,3 +22,8 @@ legend
     padding: 5px 5px 5px 10px; 
     background-color: #ffffff;
 }
+
+p.thick
+{
+    font-weight: bold;
+}

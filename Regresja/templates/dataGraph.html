@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Wykres zmiennych {{target_variable_name}} oraz {{var}}</h1>
+<img src="data:image/png;base64,{{graph}}" alt="some text to display to your users when the image does not show correctly" width=500 height=auto >
+<p>
+    <a class="btn btn-primary btn-lg btn-bloxk" href="{% url 'dataParameters' %}">Powrót</a>
+</p>
+{% endblock %}
