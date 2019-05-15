@@ -47,7 +47,6 @@ def backward_selection(X, y, threshold_out = 0.05):
     """
     included=list(X.columns)
     while True:
-        print(included)
         model = sm.OLS(y, sm.add_constant(pd.DataFrame(X[included]))).fit()
         # use all coefs except intercept
         changed=False

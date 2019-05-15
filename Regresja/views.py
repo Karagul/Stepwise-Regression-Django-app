@@ -1,7 +1,6 @@
 import matplotlib
 matplotlib.use("Agg")
 
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -10,10 +9,8 @@ from django.shortcuts import redirect
 
 import io
 import time
-from io import BytesIO
 import base64
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 from . import stepwise_regression as sr
 
@@ -64,7 +61,7 @@ def dataParameters(request):
     if request.method == 'POST':
         if 'graph' in request.POST:
             variable = request.POST['graph']
-            buf = BytesIO()
+            buf = io.BytesIO()
             x = dataset_X[variable]  
             y = dataset_y  
             plt.scatter(y, x)
@@ -89,7 +86,10 @@ def dataParameters(request):
         #            TODO
         #############################
 
-
+        request.session['treshold_in'] = float(request.POST['treshold_in'])
+        request.session['treshold_out'] = float(request.POST['treshold_out'])
+        request.session['treshold_top_selection'] = float(request.POST['treshold_for_top_selection'])
+        request.session['number_of_variables'] = int(request.POST['Liczba_zmiennych'])
 
         return redirect('dataResults')
     try:
@@ -121,67 +121,43 @@ def dataParametersGraphs(request):
     return redirect('dataParameters.html')
 
 def dataResults(request):
+    try:
+        start = time.time()
+        dataset = pd.read_json(request.session['dataset'])
+        end = time.time()
+        print(end - start)
+        target_variable = request.session['target_variable']
+        treshold_in = request.session['treshold_in'] 
+        treshold_out = request.session['treshold_out']
+        treshold_top_selection = request.session['treshold_top_selection']
+        number_of_variables = request.session['number_of_variables']
+    except:
+        return redirect('index')
     
-    return render(request,'dataResults.html')
-
-def handler404(request):
-    return redirect('index')
-def handler500(request):
-    return redirect('index')
-
-    # pokazImportDanych=True
-    # pokazWyniki=False
-    # wybor=''
-    # metoda=''
-    # dane=''
-    # target=''
-    # # wynik_foreward=''
-    # # wynik_backward=''
-    # # wynik_top=''
-    # # wynik_all = ''
-    # if request.method == 'POST':
-    #     if request.POST['wybor'] == 'pokazWyniki': 
-    #         pokazImportDanych=False
-    #         pokazWyniki=True
-    #         if request.FILES['plik_z_danymi']:
-    #             myfile= request.FILES['plik_z_danymi']  
-    #             delim=request.POST['delimiter']
-    #             targetVar=int(request.POST['Zmienna_decyzyjna'])
-    #             try:
-    #                 plik = pd.read_csv(myfile,delimiter=delim)
-    #             except :
-    #                 return render(request, 'importError.html')
-    #             if int(targetVar) >= len(plik.columns):
-    #                 targetVar = len(plik.columns)-1
-    #             X = plik.drop(plik.columns[targetVar],axis=1)
-    #             dane = X.head().to_html
-    #             y = plik[plik.columns[targetVar]]
-    #             target = plik.columns[targetVar]
-
-    #             alfa_in = float(request.POST['treshold_in'])
-    #             alfa_out = float(request.POST['treshold_out'])
-
-    #             alfa_for_top_selection = float(request.POST['treshold_for_top_selection'])
-    #             Liczba_zmiennych = int(request.POST['Liczba_zmiennych'])
-    #             request.session['dataset'] = plik.to_json()
-    #             # result_foreward=sr.foreward_selection(X,y,threshold_in=alfa_in)
-    #             # result_backward=sr.backward_selection(X,y,threshold_out=alfa_out)
-    # result_top=sr.top_selection(X,y,liczbaZmiennych=Liczba_zmiennych,threshold_in=alfa_for_top_selection)
-    # wynik_foreward=sr.RegresjaLiniowa(X[result_foreward],y).summary().as_html()
-    # wynik_backward=sr.RegresjaLiniowa(X[result_foreward],y).summary().as_html()
-    # wynik_top=sr.RegresjaLiniowa(X[result_top],y).summary().as_html()
-    # wynik_all=sr.RegresjaLiniowa(X,y).summary().as_html()
+    dataset_y = dataset[dataset.columns[target_variable]]
+    dataset_X = dataset.drop(dataset.columns[target_variable],axis=1)
+    result_forward=sr.foreward_selection(dataset_X,dataset_y,threshold_in=treshold_in)
+    result_backward=sr.backward_selection(dataset_X,dataset_y,threshold_out=treshold_out)
+    result_top=sr.top_selection(dataset_X,dataset_y,liczbaZmiennych=number_of_variables,threshold_in=treshold_top_selection)
+    wynik_forward=sr.RegresjaLiniowa(dataset_X[result_forward],dataset_y).summary()
+    wynik_backward=sr.RegresjaLiniowa(dataset_X[result_backward],dataset_y).summary()
+    wynik_top=sr.RegresjaLiniowa(dataset_X[result_top],dataset_y).summary()
+    wynik_all=sr.RegresjaLiniowa(dataset_X,dataset_y).summary()
     
-    # return render(request,'main.html',context={
-    #                                     'metoda':metoda,
-    #                                     'dane': dane,
-    #                                     'target':target,
-    #                                     'pokazImportDanych':pokazImportDanych,
-    #                                     'pokazWyniki':pokazWyniki
-    #                                     }
-    #                 )
+    return render(request,'dataResults.html',context={
+        'wynik_forward':wynik_forward.as_html(),
+        'wynik_backward':wynik_backward.as_html(),
+        'wynik_top':wynik_top.as_html(),
+        'wynik_all':wynik_all.as_html()
+    })
 
 class SignUp(generic.CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'signup.html'
+
+def handler404(request):
+    return redirect('index')
+
+def handler500(request):
+    return redirect('index')
