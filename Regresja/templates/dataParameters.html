@@ -2,112 +2,95 @@
 
 {%block content %}
 {% if user.is_authenticated %}
+    <h2>Plik został zaimportowany</h2>
+    <p>Zaimportowano <strong>{{shape_y}}</strong> kolumn oraz <strong>{{shape_x}}</strong> wierszy.</p>
+    <p>Jako zmienną decyzyjną wybrano: <strong>{{target_variable}}</strong>.</p>
+    <p>Aby powrócić do poprzedniej strony i wprowadzić zmiany, <a href="{% url 'index' %}">KLIKNIJ TU</a></p>
+    <p>Aby zobaczyć podsumowanie statystyczne przesłanych danych przejdź do dalszej części strony, bądź  <a href="#statistics">KLIKNIJ TU</a></p>
+    <fieldset>
+        <!-- Form Name -->
+        <legend>Wprowadź parametry</legend>
+        <h3>Aby przygotować modele regresji uzupełnij poniższe parametry. </h3>
+        <form method="post" enctype="multipart/form-data" class="form-horizontal">
+            {% csrf_token %}
 
-<h2>Plik został zaimportowany</h2>
-<p>Zaimportowano {{shape_y}} kolumn oraz {{shape_x}} wierszy.</p>
-<p>Jako zmienną decyzyjną wybrano: {{target_variable}}.</p>
-<p>Aby powrócić do poprzedniej strony i wprowadzić zmiany, <a href="{% url 'index' %}">KLIKNIJ TU</a></p>
-
-<fieldset>
-    <h3>Aby przygotować modele regresji uzupełnij poniższe parametry. </h3>
-    <p class="thick">W dalszej znajduje się podsumowanie poszczególnych zmiennych objaśniających.</p>
-
-    <form method="post" enctype="multipart/form-data" class="form-horizontal">
-        {% csrf_token %}
-        <fieldset>
-            <!-- Form Name -->
-            <legend>Wprowadź parametry</legend>
-            
             <div class="row">
                 <!-- Text input-->
                 <div class="form-group">
-        
                     <label class="col-md-12 control-label" for="textinput">Wartość p-value poniżej której
                         zmienna
-                        zostanie wprowadzona do modelu</label>
+                        będzie mogła zostać wprowadzona do modelu z wyborem zmiennych metodą <strong>Forward Selection</strong></label>
                     <div class="col-md-6">
-                        <input id="textinput" value="0.01" class="form-control input-md" required type="number" min="0"
+                        <input id="textinput1" value="0.01" class="form-control input-md" required type="number" min="0"
                             max="1" step="0.001" name="treshold_in" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-md-12 control-label" for="textinput">Wartość p-value powyżej której
                         zmienna
-                        zostanie usunięta z modelu </label>
+                        zostanie usunięta z modelu z wyborem zmiennych metodą <strong>Backward Selection</strong> </label>
                     <div class="col-md-6">
-                        <input id="textinput" value="0.05" class="form-control input-md" required type="number" min="0"
+                        <input id="textinput2" value="0.05" class="form-control input-md" required type="number" min="0"
                             max="1" step="0.001" name="treshold_out" required>
                     </div>
                 </div>
                 <!-- Text input-->
                 <div class="form-group">
-                    <label class="col-md-12 control-label" for="textinput">Wartość p-value poniżej której
-                        zmienna będzie
-                        mogła zostać wprowadzona do modelu</label>
-                    <div class="col-md-6">
-                        <input id="textinput" class="form-control input-md" required type="number" min="0" max="1"
-                            step="0.001" value="0.05" name="treshold_for_top_selection" required>
-                    </div>
-                </div>
-                <!-- Text input-->
-                <div class="form-group">
-                    <label class="col-md-12 control-label" for="textinput">Liczba zmiennych która
-                        maksymalnie może
-                        znaleść się w modelu (jeśli liczba zmiennych z p-value mniejszym niż podany powyżej
-                        będzie
-                        mniejsza niż liczba w tym polu, kolejne zmienne nie będą dodawane do modelu</label>
+                    <label class="col-md-12 control-label" for="textinput">Liczba zmiennych która zostanie wybrana do modelu z wyborem wybranej liczby najlepiej skorelowanych zmiennych</label>
                     <div class="col-md-6">
                         <input id="textinput" value="3" class="form-control input-md" required type="text"
                             name="Liczba_zmiennych" required>
                     </div>
                 </div>
             </div>
-        </fieldset>
-        <div class="form-group">
-            <label class="col-md-12 control-label"></label>
-            <div class="col-md-12">
+
+            <div>
                 <button type="submit" class="btn btn-primary">Zakończ konfiguracje</button>
             </div>
-        </div>
+    </fieldset>
     </form>
-    {% for variable in dataset_summary %}
-        <fieldset>
-            <h4>{{variable.0}}</h4>
-            <div class="table-responsive">
-                <table class="table">
-                    <tr>
-                        <th>count</th>
-                        <th>mean</th>
-                        <th>standard error</th>
-                        <th>minimum</th>
-                        <th>kwantyl 0.25</th>
-                        <th>mediana</th>
-                        <th>kwantyl 0.75</th>
-                        <th>maximum</th>
-                    </tr>
-                    <tr>
-                        <td>{{variable.1}}</td>
-                        <td>{{variable.2}}</td>
-                        <td>{{variable.3}}</td>
-                        <td>{{variable.4}}</td>
-                        <td>{{variable.5}}</td>
-                        <td>{{variable.6}}</td>
-                        <td>{{variable.7}}</td>
-                        <td>{{variable.8}}</td>
-                    </tr>
-                </table>
-                <form method="post" enctype="multipart/form-data" class="form-horizontal">
-                    {% csrf_token %}
-                    <input type="hidden" id="graph" name="graph" value="{{variable.0}}">
-                    <button type="submit" class="primary">Wykres</button>
-                </form>
-            </div>
-        </fieldset>
-    {% endfor %}
-</fieldset>
+    <fieldset>
+    <legend>Statystyki Opisowe</legend>
+        <div id="statistics" class="table-responsive">
+        
+            <table class="table">
 
+                <tr>
+                    <th>Zmienna</th>
+                    <th>Liczebność</th>
+                    <th>Średnia</th>
+                    <th>Odchylenie standardowe</th>
+                    <th>Minimum</th>
+                    <th>Kwantyl 0.25</th>
+                    <th>Mediana</th>
+                    <th>Kwantyl 0.75</th>
+                    <th>Maximum</th>
+                    <th>Wykres</th>
+                </tr>
+                {% for variable in dataset_summary %}
+                <tr>
+                    <td class='thick'>{{variable.0}}</td>
+                    <td>{{variable.1}}</td>
+                    <td>{{variable.2}}</td>
+                    <td>{{variable.3}}</td>
+                    <td>{{variable.4}}</td>
+                    <td>{{variable.5}}</td>
+                    <td>{{variable.6}}</td>
+                    <td>{{variable.7}}</td>
+                    <td>{{variable.8}}</td>
+                    <td>
+                        <form method="post" enctype="multipart/form-data" class="form-horizontal">
+                            {% csrf_token %}
+                            <input type="hidden" id="graph" name="graph" value="{{variable.0}}">
+                            <button type="submit" class="primary">Wykres</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </fieldset>
 {% else %}
     {% include "notLogged.html" %}
 {% endif %}
-
 {%endblock %}

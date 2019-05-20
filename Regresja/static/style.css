@@ -23,7 +23,24 @@ legend
     background-color: #ffffff;
 }
 
-p.thick
+.thick
 {
     font-weight: bold;
+}
+
+.narrow{
+    max-width: 1200px;
+    margin: auto;
+}
+
+ul.errorlist li{
+    list-style: none;
+    color: #D8000C;
+    background-color: #FFD2D2;
+    border: 1px solid;
+    box-shadow:1px 1px 3px #888;
+    border-radius:.5em;
+    margin: .5em;
+    padding: .5em;
+    font-size: 1.2rem;
 }

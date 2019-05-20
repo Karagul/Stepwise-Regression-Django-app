@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{%block content %}
+<!-- Page Content -->
+{% if user.is_authenticated %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>Wyniki estymacji: </h1>
+            <p>Zmienne zostały losowo podzielone na dwa zbiory - treningowy i testowy, w stosunku 80/20</p>
+            <p>Wszystkie wartości poza średnimi błędami prognozy zostały wyliczone dla zbioru testowego</p>
+            {% for method in summary_all %}
+            <fieldset>
+                <legend>{{method.0}}</legend>
+                <div id="statistics" class="table-responsive">
+                    <table class="table">
+                        <tr>
+                            <th>Statystyka</th>
+                            {% for header in method.8 %}
+                            <th>{{header}}</th>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Oszacowanie parametru</td>
+                            {% for param in method.1 %}
+                            <td>{{param}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Wartość p-value</td>
+                            {% for pval in method.4 %}
+                            <td>{{pval}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Błąd standardowy</td>
+                            {% for standerr in method.5 %}
+                            <td>{{standerr}}</td>
+                            {% endfor %}
+                        </tr>
+                    </table>
+                    <p>Wartość statystyki R2: {{method.2}}</p>
+                    <p>Wartość statystyki R2 skorygowanego: {{method.3}}</p>
+                    <p>Wartość średniego błędu prognozy: {{method.6}}</p>
+                    <p>Wartość średniego procentowego błędu prognozy: {{method.7}} %</p>
+                </div>
+            </fieldset>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    {% include "notLogged.html" %}
+{% endif %}
+
+
+{% endblock %}

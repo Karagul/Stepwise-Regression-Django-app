@@ -1,18 +1,70 @@
 import matplotlib
 matplotlib.use("Agg")
-
 from django.shortcuts import render
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views import generic
 from django.shortcuts import redirect
-
 import io
+import sys
 import time
 import base64
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 from . import stepwise_regression as sr
+import statsmodels.api as sm
+
+
+# Czy ustawić random state?
+# None - losowo, Int - określony seed, powtarzalne wyniki
+seed_value=1
+# Należy również ustawić do ilu miejsc po przecinku zwracać wyniki
+approximation=3
+# Stosunek podziału train/test, wartość - % zbioru testowego
+test_value=0.2
+
+
+def mean_absolute_error(y_true, y_pred):
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    result = np.mean(np.abs(y_true - y_pred))*100
+    return result.round(3)
+    
+def mean_absolute_percentage_error(y_true, y_pred): 
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    result = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+    return result.round(3)
+
+def ols_sum_table(y_true,y_pred,ols_model,method_name,headers):
+    result=[]
+    result.append(method_name)
+    result.append(list(ols_model.params.values.round(approximation)))
+    result.append(ols_model.rsquared.round(approximation))
+    result.append(ols_model.rsquared_adj.round(approximation))
+    result.append(list(ols_model.pvalues.values.round(approximation)))
+    result.append(list(ols_model.bse.values.round(approximation)))
+    result.append(mean_absolute_error(y_true,y_pred))
+    result.append(mean_absolute_percentage_error(y_true,y_pred))
+    headers.insert(0,'CONST')
+    result.append(headers)
+    return result
+
+
+
+
+def convertDataToPlot(x,y,x_name,y_name):
+    buf = io.BytesIO()
+    plt.style.use('seaborn')
+    plt.scatter(x, y)
+    plt.xlabel(x_name)
+    plt.ylabel(y_name)
+    #plt.title('Wykres zmiennej '+variable)
+    plt.savefig(buf, format='png', dpi=300)
+    encode = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
+    plt.close()
+    buf.close()
+    return encode
 
 def index(request):
     if request.method == 'POST':
@@ -60,20 +112,8 @@ def dataParameters(request):
     dataset_summary = []
     if request.method == 'POST':
         if 'graph' in request.POST:
-            variable = request.POST['graph']
-            buf = io.BytesIO()
-            x = dataset_X[variable]  
-            y = dataset_y  
-            plt.scatter(y, x)
-            plt.xlabel(target_variable_name)
-            plt.ylabel(variable)
-            #plt.title('Wykres zmiennej '+variable)
-            plt.savefig(buf, format='png', dpi=300)
-
-            encode=base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
-                
-            plt.close()
-            buf.close()
+            variable = request.POST['graph'] 
+            encode = convertDataToPlot(dataset_X[variable],dataset_y,variable,target_variable_name)
 
             context = {
                 'graph':encode,
@@ -82,13 +122,9 @@ def dataParameters(request):
                 }
             return render(request,'dataGraph.html',context=context)
         
-        #############################
-        #            TODO
-        #############################
 
         request.session['treshold_in'] = float(request.POST['treshold_in'])
         request.session['treshold_out'] = float(request.POST['treshold_out'])
-        request.session['treshold_top_selection'] = float(request.POST['treshold_for_top_selection'])
         request.session['number_of_variables'] = int(request.POST['Liczba_zmiennych'])
 
         return redirect('dataResults')
@@ -96,15 +132,14 @@ def dataParameters(request):
         for variable in headers:
             dataset_desciption = []
             dataset_desciption.append(variable)
-            dataset_desciption.append(round(dataset_X[variable].count(),2))
-            dataset_desciption.append(round(dataset_X[variable].mean(),2))
-            dataset_desciption.append(round(dataset_X[variable].std(),2))
-            dataset_desciption.append(round(dataset_X[variable].min(),2))
-            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.25),2))
-            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.5),2))
-            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.75),2))
-            dataset_desciption.append(round(dataset_X[variable].max(),2))
-
+            dataset_desciption.append(round(dataset_X[variable].count(),approximation))
+            dataset_desciption.append(round(dataset_X[variable].mean(),approximation))
+            dataset_desciption.append(round(dataset_X[variable].std(),approximation))
+            dataset_desciption.append(round(dataset_X[variable].min(),approximation))
+            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.25),approximation))
+            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.5),approximation))
+            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.75),approximation))
+            dataset_desciption.append(round(dataset_X[variable].max(),approximation))
             dataset_summary.append(dataset_desciption)
     except:
         return render(request,'importError.html')
@@ -122,33 +157,48 @@ def dataParametersGraphs(request):
 
 def dataResults(request):
     try:
-        start = time.time()
         dataset = pd.read_json(request.session['dataset'])
-        end = time.time()
-        print(end - start)
         target_variable = request.session['target_variable']
         treshold_in = request.session['treshold_in'] 
         treshold_out = request.session['treshold_out']
-        treshold_top_selection = request.session['treshold_top_selection']
         number_of_variables = request.session['number_of_variables']
     except:
         return redirect('index')
     
     dataset_y = dataset[dataset.columns[target_variable]]
     dataset_X = dataset.drop(dataset.columns[target_variable],axis=1)
-    result_forward=sr.foreward_selection(dataset_X,dataset_y,threshold_in=treshold_in)
-    result_backward=sr.backward_selection(dataset_X,dataset_y,threshold_out=treshold_out)
-    result_top=sr.top_selection(dataset_X,dataset_y,liczbaZmiennych=number_of_variables,threshold_in=treshold_top_selection)
-    wynik_forward=sr.RegresjaLiniowa(dataset_X[result_forward],dataset_y).summary()
-    wynik_backward=sr.RegresjaLiniowa(dataset_X[result_backward],dataset_y).summary()
-    wynik_top=sr.RegresjaLiniowa(dataset_X[result_top],dataset_y).summary()
-    wynik_all=sr.RegresjaLiniowa(dataset_X,dataset_y).summary()
+
+    X_train, X_test, y_train, y_test = train_test_split(dataset_X,dataset_y, test_size=test_value,random_state=seed_value)
+
+    result_forward=sr.forward_selection(X_train,y_train,threshold_in=treshold_in)
+    ols_forward = sr.linear_regression_sm(X_train[result_forward],y_train)
+    y_predict_forward = ols_forward.predict(sm.add_constant(X_test[result_forward]))
+    forward_summary = ols_sum_table(y_test,y_predict_forward,ols_forward,'Forward Selection',result_forward)
+
+
+    result_backward=sr.backward_selection(X_train,y_train,threshold_out=treshold_out)
+    ols_backward = sr.linear_regression_sm(X_train[result_backward],y_train)
+    y_predict_backward = ols_backward.predict(sm.add_constant(X_test[result_backward]))
+    backward_summary = ols_sum_table(y_test,y_predict_backward,ols_backward,'Backward Selection', result_backward)
     
-    return render(request,'dataResults.html',context={
-        'wynik_forward':wynik_forward.as_html(),
-        'wynik_backward':wynik_backward.as_html(),
-        'wynik_top':wynik_top.as_html(),
-        'wynik_all':wynik_all.as_html()
+    result_top=list(sr.top_selection(X_train,y_train,var_number=number_of_variables))
+    ols_top = sr.linear_regression_sm(X_train[result_top],y_train)
+    y_predict_top = ols_top.predict(sm.add_constant(X_test[result_top]))
+    top_summary = ols_sum_table(y_test,y_predict_top,ols_top,str(number_of_variables)+' skorelowanych zmiennych',result_top)
+    
+    
+    result_all = list(X_test.columns)
+    ols_all = sr.linear_regression_sm(X_train,y_train)
+    y_predict_all = ols_all.predict(sm.add_constant(X_test))
+    all_summary = ols_sum_table(y_test,y_predict_all,ols_all,'wszystkie zmienne',result_all)
+
+    summary_of_all_methods = [forward_summary,backward_summary,top_summary,all_summary]
+
+
+    return render(request,'dataResult.html',context={
+        'summary_all':summary_of_all_methods,
+        'number_of_variables':number_of_variables,
+
     })
 
 class SignUp(generic.CreateView):
@@ -161,3 +211,5 @@ def handler404(request):
 
 def handler500(request):
     return redirect('index')
+
+

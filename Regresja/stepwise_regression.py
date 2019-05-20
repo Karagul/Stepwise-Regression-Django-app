@@ -1,7 +1,7 @@
 import pandas as pd
 import statsmodels.api as sm
 
-def foreward_selection(X, y, 
+def forward_selection(X, y, 
                        initial_list=[], 
                        threshold_in=0.01):
     """ 
@@ -60,41 +60,23 @@ def backward_selection(X, y, threshold_out = 0.05):
             break
     return included
 
-def top_selection(X,y,
-                    liczbaZmiennych=2,
-                    threshold_in=0.05):
+def top_selection(X,y, var_number=2):
     """ 
     Funkcja wykonuje selekcję najlepiej skorelowanych zmiennych
-    na podstawie p-value z statsmodels.api.OLS
     Argumenty:
         X - pandas.DataFrame ze zmiennymi objaśniającymi
         y - Zmienna w postaci listy ze zmienną objaśnianą
-        liczbaZmiennych - maksymalna liczba zmiennych która zostanie wybrana
-        threshold_in - dodaj zmienną jeśli jej p-value < threshold_in
-        verbose - Czy wyświetlić kolejność dodawania/usuwania zmiennych
+        liczbaZmiennych - Liczba zmiennych która zostanie wybrana
     Zwraca: lista wyselekcjonowanych zmiennych
-    Zawsze należy ustawić treshhold_in < treshold_out w celu uniknięcia zapętlenia funkcji.
     """
-    included = list()
-    while len(included)<liczbaZmiennych and len(included)<len(X.columns):
-        changed=False
-        excluded = list(set(X.columns)-set(included))
-        new_pval = pd.Series(index=excluded)
-        for new_column in excluded:
-            model = sm.OLS(y, sm.add_constant(pd.DataFrame(X[included+[new_column]]))).fit()
-            new_pval[new_column] = model.pvalues[new_column]
-        best_pval = new_pval.min()
-        if best_pval < threshold_in:
-            best_feature = new_pval.idxmin()
-            included.append(best_feature)
-            changed=True
-        if not changed:
-            break
-    return included
+    dataset = X.copy()
+    dataset['y']=y
+    corr_array=dataset.corr().iloc[:-1,-1].abs()
+    results = corr_array.sort_values(ascending=False)[0:var_number]
+    return results.index
 
-#result = stepwise_selection(X, y)
 
-def RegresjaLiniowa(X,y):
+def linear_regression_sm(X,y):
     """ 
     Funkcja tworzy liniowy model dla wszystkich zmiennych które zostaną podane w argumencie X.
     Arguments:

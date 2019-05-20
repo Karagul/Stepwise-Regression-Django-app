@@ -4,7 +4,8 @@
 {% block content %}
 <form method="post">
   {% csrf_token %}
+  <h3>Wprowadź poprawne dane logowania:</h3>
   {{ form.as_p }}
-  <button type="submit">Login</button>
+  <button class='btn btn-secondary btn-lg' type="submit">Login</button>
 </form>
 {% endblock content %}

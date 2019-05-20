@@ -1,4 +1,5 @@
 Django
 Pandas
+Numpy
 statmodels
 scipy

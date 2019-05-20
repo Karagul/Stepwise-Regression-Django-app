@@ -1,7 +1,9 @@
 <div class="row">
     <div class="col">
         <h2>Niestety, nie jesteś zalogowany.</h2>
-        <h3>Aby kontynuować, przejdź do panelu logowania za pomocą poniższego przycisku:</h3>
+        <h4>Aby kontynuować, przejdź do panelu logowania za pomocą poniższego przycisku:</h4>
         <a href="{% url 'login' %}" class='btn btn-primary btn-lg'>Logowanie</a>
+        <h4 class='mt-3'>Jeśli nie masz jeszcze konta, możesz je założyć korzystając z poniższego przycisku:</h4>
+        <a href="{% url 'signup' %}" class='btn btn-secondary btn-lg'>Rejestracja</a>
     </div>
 </div>
