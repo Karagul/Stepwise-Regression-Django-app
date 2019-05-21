@@ -5,211 +5,182 @@ from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views import generic
 from django.shortcuts import redirect
-import io
-import sys
-import time
-import base64
+from django.http import HttpResponse
+
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+
 from . import stepwise_regression as sr
-import statsmodels.api as sm
-
-
-# Czy ustawić random state?
-# None - losowo, Int - określony seed, powtarzalne wyniki
-seed_value=1
-# Należy również ustawić do ilu miejsc po przecinku zwracać wyniki
-approximation=3
-# Stosunek podziału train/test, wartość - % zbioru testowego
-test_value=0.2
-
-
-def mean_absolute_error(y_true, y_pred):
-    y_true, y_pred = np.array(y_true), np.array(y_pred)
-    result = np.mean(np.abs(y_true - y_pred))*100
-    return result.round(3)
-    
-def mean_absolute_percentage_error(y_true, y_pred): 
-    y_true, y_pred = np.array(y_true), np.array(y_pred)
-    result = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
-    return result.round(3)
-
-def ols_sum_table(y_true,y_pred,ols_model,method_name,headers):
-    result=[]
-    result.append(method_name)
-    result.append(list(ols_model.params.values.round(approximation)))
-    result.append(ols_model.rsquared.round(approximation))
-    result.append(ols_model.rsquared_adj.round(approximation))
-    result.append(list(ols_model.pvalues.values.round(approximation)))
-    result.append(list(ols_model.bse.values.round(approximation)))
-    result.append(mean_absolute_error(y_true,y_pred))
-    result.append(mean_absolute_percentage_error(y_true,y_pred))
-    headers.insert(0,'CONST')
-    result.append(headers)
-    return result
+from statsmodels.api import add_constant
 
 
 
 
-def convertDataToPlot(x,y,x_name,y_name):
-    buf = io.BytesIO()
-    plt.style.use('seaborn')
-    plt.scatter(x, y)
-    plt.xlabel(x_name)
-    plt.ylabel(y_name)
-    #plt.title('Wykres zmiennej '+variable)
-    plt.savefig(buf, format='png', dpi=300)
-    encode = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
-    plt.close()
-    buf.close()
-    return encode
+
 
 def index(request):
-    if request.method == 'POST':
-        
-        delim=request.POST['delimiter']
-        request.session['delimiter'] = delim
 
+    # POST jeśli plik został przesłany
+    if request.method == 'POST':
+        # zapis delimitera w sesji
+        request.session['delimiter'] = request.POST['delimiter']
+
+        # zapisanie przesłanego pliku w sesji oraz sprawdzenie poprawności
         myfile= request.FILES['plik_z_danymi']
         try:
             if myfile.name.endswith('.csv'):
-                plik = pd.read_csv(myfile,delimiter=delim)
+                myfile_dataFrame = pd.read_csv(myfile,delimiter=request.POST['delimiter'])
             elif myfile.name.endswith('.xls') or myfile.name.endswith('.xlsx'):
-                plik = pd.read_excel(myfile)
-            elif myfile.name.endswith('.json'):
-                plik = pd.read_json(myfile)
+                myfile_dataFrame = pd.read_excel(myfile)
             else:
+                # zwrócenie komunikatu o błędzie w przypadku nierozpoznania rozszerzenia
                 return render(request, 'importError.html')
         except :
+            #zwrócenie komunikatu o błędzie w przypadku błędu przy imporcie z pliku
             return render(request, 'importError.html')
-        request.session['dataset'] = plik.to_json()
-
+        request.session['dataset'] = myfile_dataFrame
+        # zapis w sesji która zmienna jest zależna, oraz sprawdzenie czy liczba nie jest zbyt duża
         targetVar=int(request.POST['Zmienna_decyzyjna'])
-        if int(targetVar) >= len(plik.columns):
-            targetVar = len(plik.columns)-1
+        if targetVar >= len(myfile_dataFrame.columns):
+            targetVar = len(myfile_dataFrame.columns)-1
         request.session['target_variable'] = targetVar
+
+        #po zapisaniu danych w sesji przejście do kolejnego widoku i analizy zmiennych
         return render(request,'dataParametersWaiting.html',context={'link':'dataParameters'})
+
+    #wyświetlenie widoku importu, jesli myfile_dataFrame nie został jeszcze przesłany
     return render(request, 'dataImport.html')
 
+#widok wywoływany po przejściu do /dataParameters
 def dataParameters(request):
-    
-    try:
-        dataset = pd.read_json(request.session['dataset'])
-        target_variable = request.session['target_variable']
-        delimiter = request.session['delimiter']
-    except:
+
+    # sprawdzenie czy plik został przesłany
+    if 'dataset' not in request.session:
         return redirect('index')
-    if int(target_variable) >= len(dataset.columns):
-        target_variable = len(dataset.columns)-1
+
    
+    # przypisanie zmiennych dotyczących zbioru danych
+    dataset = request.session['dataset']
+    target_variable = request.session['target_variable']
+    delimiter = request.session['delimiter']
+
     target_variable_name = dataset.columns[target_variable]
     shape_x,shape_y=dataset.shape
     dataset_y = dataset[dataset.columns[target_variable]]
     dataset_X = dataset.drop(dataset.columns[target_variable],axis=1)
     headers = dataset_X.columns
-    dataset_summary = []
+    
+    # po przesłaniu odpowiedzi
     if request.method == 'POST':
-        if 'graph' in request.POST:
-            variable = request.POST['graph'] 
-            encode = convertDataToPlot(dataset_X[variable],dataset_y,variable,target_variable_name)
 
+        # po wciśnięciu przyciku 'WYKRES'
+        if 'graph' in request.POST:
+            variable = request.POST['graph']
+
+            #przygotowanie  wykresu punktowego
+            plot = sr.prepare_scatter_plot(dataset_X[variable],dataset_y,variable,target_variable_name)
+            #i wykresu pudełkowego
+            boxplot = sr.prepare_box_plot(dataset_X[variable])
             context = {
-                'graph':encode,
+                'graph':plot,
+                'boxplot':boxplot,
                 'var':variable,
                 'target_variable_name':target_variable_name
                 }
+
             return render(request,'dataGraph.html',context=context)
         
+        # po wciśnięciu przycisku 'PRZEJDŹ DO WYNIKÓW'
+        else:
+            #zapisanie parametrów w sesji i przejście do widoku z wynikami
+            request.session['treshold_in'] = float(request.POST['treshold_in'])
+            request.session['treshold_out'] = float(request.POST['treshold_out'])
+            request.session['number_of_variables'] = int(request.POST['Liczba_zmiennych'])
 
-        request.session['treshold_in'] = float(request.POST['treshold_in'])
-        request.session['treshold_out'] = float(request.POST['treshold_out'])
-        request.session['number_of_variables'] = int(request.POST['Liczba_zmiennych'])
+            return redirect('dataResults')
 
-        return redirect('dataResults')
+
+    corr_matrix = dataset.corr()
+    # corr_matrix = sr.correlationPlot(corr_matrix)
     try:
-        for variable in headers:
-            dataset_desciption = []
-            dataset_desciption.append(variable)
-            dataset_desciption.append(round(dataset_X[variable].count(),approximation))
-            dataset_desciption.append(round(dataset_X[variable].mean(),approximation))
-            dataset_desciption.append(round(dataset_X[variable].std(),approximation))
-            dataset_desciption.append(round(dataset_X[variable].min(),approximation))
-            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.25),approximation))
-            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.5),approximation))
-            dataset_desciption.append(round(dataset_X[variable].quantile(q=0.75),approximation))
-            dataset_desciption.append(round(dataset_X[variable].max(),approximation))
-            dataset_summary.append(dataset_desciption)
+        #obliczenie statystyk opisowych z pomocą list comprahension
+        dataset_summary = sr.dataset_statistic_summary(dataset_X,headers)
+        # błąd gdy w pliku znajdują się zmienne nieliczbowe
     except:
         return render(request,'importError.html')
+
+
     context = {
         'target_variable':target_variable_name,
         'shape_x':shape_x,
         'shape_y':shape_y,
-        # 'plots':plots_images,
+        'corr_matrix':corr_matrix,
         'dataset_summary':dataset_summary
     }
     return render(request,'dataParameters.html',context=context)
 
-def dataParametersGraphs(request):
-    return redirect('dataParameters.html')
-
+#widok wywoływany po przekierowaniu do /dataResults
 def dataResults(request):
-    try:
-        dataset = pd.read_json(request.session['dataset'])
-        target_variable = request.session['target_variable']
-        treshold_in = request.session['treshold_in'] 
-        treshold_out = request.session['treshold_out']
-        number_of_variables = request.session['number_of_variables']
-    except:
+
+    #sprawdzenie czy dataset został załadowany w sesji
+    if 'dataset' not in request.session:
         return redirect('index')
-    
+
+    #przypisanie zmiennych z sesji
+    dataset = request.session['dataset'] 
+    target_variable = request.session['target_variable']
+    treshold_in = request.session['treshold_in'] 
+    treshold_out = request.session['treshold_out']
+    number_of_variables = request.session['number_of_variables']
+
+    #podział datasetu na zbiór zmiennych objaśniających X i zmienną objaśnianą
     dataset_y = dataset[dataset.columns[target_variable]]
     dataset_X = dataset.drop(dataset.columns[target_variable],axis=1)
 
-    X_train, X_test, y_train, y_test = train_test_split(dataset_X,dataset_y, test_size=test_value,random_state=seed_value)
+    #podział danych na zbiory train i test - test size i random state są ustalone przy implementacji metody
+    X_train, X_test, y_train, y_test = sr.train_test_split_with_params(dataset_X,dataset_y)
 
+    #ustalenie zmiennych wchodzących do modeli czterema metodami
     result_forward=sr.forward_selection(X_train,y_train,threshold_in=treshold_in)
-    ols_forward = sr.linear_regression_sm(X_train[result_forward],y_train)
-    y_predict_forward = ols_forward.predict(sm.add_constant(X_test[result_forward]))
-    forward_summary = ols_sum_table(y_test,y_predict_forward,ols_forward,'Forward Selection',result_forward)
-
-
     result_backward=sr.backward_selection(X_train,y_train,threshold_out=treshold_out)
-    ols_backward = sr.linear_regression_sm(X_train[result_backward],y_train)
-    y_predict_backward = ols_backward.predict(sm.add_constant(X_test[result_backward]))
-    backward_summary = ols_sum_table(y_test,y_predict_backward,ols_backward,'Backward Selection', result_backward)
-    
     result_top=list(sr.top_selection(X_train,y_train,var_number=number_of_variables))
-    ols_top = sr.linear_regression_sm(X_train[result_top],y_train)
-    y_predict_top = ols_top.predict(sm.add_constant(X_test[result_top]))
-    top_summary = ols_sum_table(y_test,y_predict_top,ols_top,str(number_of_variables)+' skorelowanych zmiennych',result_top)
-    
-    
     result_all = list(X_test.columns)
-    ols_all = sr.linear_regression_sm(X_train,y_train)
-    y_predict_all = ols_all.predict(sm.add_constant(X_test))
-    all_summary = ols_sum_table(y_test,y_predict_all,ols_all,'wszystkie zmienne',result_all)
+    
+    #przygotowanie modeli ze zmiennymi ustalonymi w poprzednim kroku
+    ols_forward = sr.linear_regression(X_train[result_forward],y_train)
+    ols_backward = sr.linear_regression(X_train[result_backward],y_train)
+    ols_top = sr.linear_regression(X_train[result_top],y_train)
+    ols_all = sr.linear_regression(X_train,y_train)
+    
+    #oszacowanie wartości y na zbiorze testowym oraz dodanie wyrazu wolnego - kolumny z '1'
+    y_predict_forward = ols_forward.predict(add_constant(X_test[result_forward]))
+    y_predict_backward = ols_backward.predict(add_constant(X_test[result_backward]))
+    y_predict_top = ols_top.predict(add_constant(X_test[result_top]))
+    y_predict_all = ols_all.predict(add_constant(X_test))
 
+    #przygotowanie podsumowania dla wszystkich metod
+    forward_summary = sr.ols_sum_table(y_test,y_predict_forward,ols_forward,'Forward Selection',result_forward)
+    backward_summary = sr.ols_sum_table(y_test,y_predict_backward,ols_backward,'Backward Selection', result_backward)
+    top_summary = sr.ols_sum_table(y_test,y_predict_top,ols_top,'Najlepiej skorelowanE zmienne',result_top)
+    all_summary = sr.ols_sum_table(y_test,y_predict_all,ols_all,'Wszystkie zmienne',result_all)
+
+    #zapisanie wszystkich podsumowań w jednej tablicy
     summary_of_all_methods = [forward_summary,backward_summary,top_summary,all_summary]
 
 
     return render(request,'dataResult.html',context={
         'summary_all':summary_of_all_methods,
         'number_of_variables':number_of_variables,
-
     })
 
+# klasa obsługująca rejestrację użytkownika
 class SignUp(generic.CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'signup.html'
 
+# obsługa błędów 404 oraz 500 - przekierowanie na pierwszą stronę 
 def handler404(request):
     return redirect('index')
 
 def handler500(request):
     return redirect('index')
-
-

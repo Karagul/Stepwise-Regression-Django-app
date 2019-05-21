@@ -4,7 +4,7 @@
 {% if user.is_authenticated %}
     <h2>Plik został zaimportowany</h2>
     <p>Zaimportowano <strong>{{shape_y}}</strong> kolumn oraz <strong>{{shape_x}}</strong> wierszy.</p>
-    <p>Jako zmienną decyzyjną wybrano: <strong>{{target_variable}}</strong>.</p>
+    <p>Jako zmienną objaśnianą wybrano: <strong>{{target_variable}}</strong>.</p>
     <p>Aby powrócić do poprzedniej strony i wprowadzić zmiany, <a href="{% url 'index' %}">KLIKNIJ TU</a></p>
     <p>Aby zobaczyć podsumowanie statystyczne przesłanych danych przejdź do dalszej części strony, bądź  <a href="#statistics">KLIKNIJ TU</a></p>
     <fieldset>
@@ -21,7 +21,7 @@
                         zmienna
                         będzie mogła zostać wprowadzona do modelu z wyborem zmiennych metodą <strong>Forward Selection</strong></label>
                     <div class="col-md-6">
-                        <input id="textinput1" value="0.01" class="form-control input-md" required type="number" min="0"
+                        <input id="textinput1" value="0.05" class="form-control input-md" required type="number" min="0"
                             max="1" step="0.001" name="treshold_in" required>
                     </div>
                 </div>
@@ -51,8 +51,14 @@
     </form>
     <fieldset>
     <legend>Statystyki Opisowe</legend>
+
+        <h3>Macierz korelacji poszcególnych zmiennych</h3>
+        <div>
+        {% comment %} <img src="data:image/png;base64,{{corr_matrix}}" alt="Correlation Matrix" class="img-fluid"> {% endcomment %}
+        {{corr_matrix}}
+        </div>
+        <h3>Statystyki opisowe oraz wykresy poszczególnych zmiennych:</h3>
         <div id="statistics" class="table-responsive">
-        
             <table class="table">
 
                 <tr>

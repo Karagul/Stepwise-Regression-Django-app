@@ -10,27 +10,29 @@
 	<meta name="description" content="Regression Analisis">
 	<meta name="author" content="Adrian Stępniak">
 	{% block waiting %}
-  {% endblock %}
+	{% endblock %}
 	<title>Regresja W Django</title>
 
 	<link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
+		integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
 </head>
 
 <body>
 	<!-- Navigation -->
 	{% block navigation %}
-		{% include "navBar.html" %}
+	{% include "navBar.html" %}
 	{% endblock navigation %}
-    <main>
-	    <div class="container narrow mt-5">
-            {% block content %}
-            {% endblock %}
+	<main>
+		<div class="container narrow mt-5">
+			{% block content %}
+			{% endblock %}
 		</div>
-    </main>
+	</main>
 	<!-- Bootstrap core JavaScript -->
 	<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 	<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 </body>
+
 </html>
