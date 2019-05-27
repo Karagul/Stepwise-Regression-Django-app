@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
-
-{%block content %}
+{% block content %}
 <!-- Page Content -->
 {% if user.is_authenticated %}
     <div class="row">
@@ -50,6 +49,4 @@
 {% else %}
     {% include "notLogged.html" %}
 {% endif %}
-
-
 {% endblock %}

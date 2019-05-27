@@ -1,5 +1,9 @@
-Django
-Pandas
-Numpy
-statmodels
-scipy
+Numpy == 1.14.2
+Pandas == 0.23.4
+matplotlib == 3.0.1
+Django ==2.1.3
+Scipy ==1.2
+Sklearn 
+Patsy == 0.5.0
+statsmodels == 0.9.0
+

@@ -2,12 +2,11 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-
-    path('',views.index, name='index'),
+    path('', views.index, name='index'),
     path('', include('django.contrib.auth.urls')),
     path('signup/', views.SignUp.as_view(), name='signup'),
-    path('dataParameters/',views.dataParameters, name='dataParameters'),
-    path('dataResults/',views.dataResults, name='dataResults')
+    path('Parameters/', views.dataParameters, name='dataParameters'),
+    path('Results/', views.dataResults, name='dataResults')
 ]
 
 # login/ [name='login']

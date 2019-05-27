@@ -1,26 +1,27 @@
 {% extends 'base.html' %}
-	
-{%block content %}
+{% block content %}
 {% if user.is_authenticated %}
 <form method="post" enctype="multipart/form-data" class="form-horizontal">
     {% csrf_token %}
     <fieldset>
         <legend>Dane</legend>
         <div class="form-group">
-            <label for="plik_z_danymi">Wybierz plik z danymi do analizy. Obsługiwane formaty to: csv, xls, xlsx oraz json:</label>
-            <input type="file" accept=".xls,.xlsx,.csv,.json,.txt" id="plik_z_danymi" name="plik_z_danymi" required>
+            <label for="plik_z_danymi">Wybierz plik z danymi do analizy. Obsługiwane formaty to: csv, txt, xls,
+                xlsx.</label>
+            <div><input type="file" accept=".xls,.xlsx,.csv,.txt" id="plik_z_danymi" name="plik_z_danymi" required>
+            </div>
         </div>
         <div class=" row">
             <div class=" form-group col-md-8">
                 <label class="control-label" for="textinput">Podaj nr kolumny w której
                     znajduje się zmienna objaśniana (licząc od 0)</label>
-                    <input id="textinput" value="0" class="form-control input-md" required type="number" min="0"
-                        step="1" name="Zmienna_decyzyjna" required>
+                <input id="textinput" value="0" class="form-control input-md" required type="number" min="0" step="1"
+                    name="Zmienna_decyzyjna" required>
             </div>
             <div class="form-group col-md-4">
                 <label class="control-label" for="textinput">Delimiter</label>
-                    <input id="textinput" value=";" class="form-control input-md" required type="text" name="delimiter"
-                        required>
+                <input id="textinput" value=";" class="form-control input-md" required type="text" name="delimiter"
+                    required>
             </div>
         </div>
     </fieldset>
@@ -28,6 +29,5 @@
 </form>
 {% else %}
     {% include "notLogged.html" %}
-	{% endif %}
-
-{%endblock %}
+{% endif %}
+{% endblock %}
