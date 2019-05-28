@@ -21,8 +21,6 @@ def index(request):
         try:
             if myfile.name.endswith(('.csv', '.txt')):
                 myfile_dataFrame = pd.read_csv(myfile, delimiter=request.POST['delimiter'])
-            elif myfile.name.endswith(('.xls', '.xlsx')):
-                myfile_dataFrame = pd.read_excel(myfile)
             else:
                 return render(request, 'importError.html')
         except:
@@ -42,8 +40,6 @@ def index(request):
     return render(request, 'dataImport.html')
 
 # widok wywoływany po przejściu do /dataParameters
-
-
 def dataParameters(request):
 
     # sprawdzenie czy plik został przesłany
@@ -160,17 +156,19 @@ def dataResults(request):
 
     # przygotowanie podsumowania dla wszystkich metod
     forward_summary = sr.ols_sum_table(
-        y_test, y_predict_forward, ols_forward, 'Forward Selection', result_forward)
+        y_test, y_predict_forward, ols_forward, result_forward, 'Forward Selection')
     backward_summary = sr.ols_sum_table(
-        y_test, y_predict_backward, ols_backward, 'Backward Selection', result_backward)
+        y_test, y_predict_backward, ols_backward, result_backward, 'Backward Selection')
     top_summary = sr.ols_sum_table(
-        y_test, y_predict_top, ols_top, 'Najlepiej skorelowanE zmienne', result_top)
+        y_test, y_predict_top, ols_top, result_top, 'Najlepiej skorelowane zmienne')
     all_summary = sr.ols_sum_table(
-        y_test, y_predict_all, ols_all, 'Wszystkie zmienne', result_all)
+        y_test, y_predict_all, ols_all, result_all, 'Wszystkie zmienne objaśniające')
 
     # zapisanie wszystkich podsumowań w jednej tablicy
     summary_of_all_methods = [forward_summary,
-                              backward_summary, top_summary, all_summary]
+                              backward_summary, 
+                              top_summary, 
+                              all_summary]
 
     return render(request, 'dataResult.html', context={
         'summary_all': summary_of_all_methods,

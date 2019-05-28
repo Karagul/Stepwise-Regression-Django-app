@@ -9,7 +9,7 @@
             <p>Wszystkie wartości poza średnimi błędami prognozy zostały wyliczone dla zbioru testowego</p>
             {% for method in summary_all %}
             <fieldset>
-                <legend>{{method.0}}</legend>
+                <legend>{{method.9}}</legend>
                 <div id="statistics" class="table-responsive">
                     <table class="table">
                         <tr>
@@ -20,27 +20,23 @@
                         </tr>
                         <tr>
                             <td>Oszacowanie parametru</td>
-                            {% for param in method.1 %}
+                            {% for param in method.0 %}
                             <td>{{param}}</td>
                             {% endfor %}
                         </tr>
                         <tr>
                             <td>Wartość p-value</td>
-                            {% for pval in method.4 %}
+                            {% for pval in method.1 %}
                             <td>{{pval}}</td>
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <td>Błąd standardowy</td>
-                            {% for standerr in method.5 %}
-                            <td>{{standerr}}</td>
                             {% endfor %}
                         </tr>
                     </table>
                     <p>Wartość statystyki R2: {{method.2}}</p>
                     <p>Wartość statystyki R2 skorygowanego: {{method.3}}</p>
-                    <p>Wartość średniego błędu prognozy: {{method.6}}</p>
-                    <p>Wartość średniego procentowego błędu prognozy: {{method.7}} %</p>
+                    <p>Wartość średniego błędu prognozy ME: {{method.4}}</p>
+                    <p>Wartość pierwiastka błędu średniokwadratowego RMSE: {{method.5}}</p>
+                    <p>Wartość średniego absolutnego błędu prognozy: {{method.6}}</p>
+                    <p>Wartość średniego procentowego absolutnego błędu prognozy: {{method.7}} %</p>
                 </div>
             </fieldset>
             {% endfor %}

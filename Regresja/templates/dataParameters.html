@@ -14,7 +14,6 @@
     <h3>Aby przygotować modele regresji uzupełnij poniższe parametry. </h3>
     <form method="post" enctype="multipart/form-data" class="form-horizontal">
         {% csrf_token %}
-
         <div class="row">
             <!-- Text input-->
             <div class="form-group">
@@ -54,7 +53,6 @@
 </form>
 <fieldset>
     <legend>Statystyki Opisowe</legend>
-
     <h3>Macierz korelacji poszcególnych zmiennych</h3>
     <div>
         <img src="data:image/png;base64,{{corr_matrix}}" alt="Correlation Matrix" class="img-fluid">
@@ -62,7 +60,6 @@
     <h3>Statystyki opisowe oraz wykresy poszczególnych zmiennych:</h3>
     <div id="statistics" class="table-responsive">
         <table class="table">
-
             <tr>
                 <th>Zmienna</th>
                 <th>Liczebność</th>
@@ -101,4 +98,4 @@
 {% else %}
 {% include "notLogged.html" %}
 {% endif %}
-{%endblock %}
+{% endblock %}

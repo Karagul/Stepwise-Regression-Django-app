@@ -96,7 +96,6 @@ def top_selection(X, y, var_number=2):
     """
     # umieszczenie zmiennej objaśnianej na końcu dataframe
     dataset = X.assign(DependendVariable=y)
-    print(dataset)
     # obliczenie macierzy korelacji i pobranie modułów z ostatniej kolumny - czyli korelacji ze zmienną y
     corr_array = dataset.corr().iloc[:-1, -1].abs()
     # sortowanie i wybranie najlepiej skorelowanych zmiennych
@@ -136,7 +135,7 @@ def dataset_statistic_summary(dataset, headers):
          round(dataset[variable].max(), APPROX)] for variable in headers]
 
 
-def ols_sum_table(y_true, y_pred, ols_model, method_name, headers):
+def ols_sum_table(y_true, y_pred, ols_model, headers, method_name):
     '''
     Funkcja przygotowywuje tablicę ze statystykami oszacowanego modelo
     Argumenty:
@@ -148,21 +147,19 @@ def ols_sum_table(y_true, y_pred, ols_model, method_name, headers):
     Zwraca: wartość MAPE 
     '''
     # dodanie do nagłówków oznaczenia wyrazu wolnego
-    
+    headers.insert(0, 'CONST')
     # zwrocenie listy z poszczególnymi statystykami
     return [
-        method_name,  # nazwa metody (przekazana jako argument)
-        # lista z oszacowaniami parametrów modelu
-        list(ols_model.params.values.round(APPROX)),
+        list(ols_model.params.values.round(APPROX)),    # oszacowania parametrów
+        list(ols_model.pvalues.values.round(APPROX)),   # lista z wartośćiami p-value
         ols_model.rsquared.round(APPROX),               # wartość r^2
-        ols_model.rsquared_adj.round(APPROX),  # wartość skorygowanego r^2
-        
-        list(ols_model.pvalues.values.round(APPROX)),# lista z wartośćiami p-value
-        list(ols_model.bse.values.round(APPROX)),  # lista z błędami oszacowań
-        mean_absolute_error(y_true, y_pred),  # MAE - średni błąd absolutny
-        # MAPE - średni procentowy błąd absolutny
-        mean_absolute_percentage_error(y_true, y_pred),
-        headers.insert(0, 'CONST')                                       # nazwy zmiennych
+        ols_model.rsquared_adj.round(APPROX),           # wartość skorygowanego r^2
+        mean_error(y_true,y_pred),                      # ME - błąd średni
+        root_mean_squared_error(y_true,y_pred),         # RMSE - pierwiastek błędu średniokwadratowego
+        mean_absolute_error(y_true, y_pred),            # MAE - średni błąd absolutny
+        mean_absolute_percentage_error(y_true, y_pred), # MAPE - średni procentowy błąd absolutny
+        headers,                                        # nazwy zmiennych
+        method_name                                     # nazwa metody
     ]
 
 def mean_error(y_true, y_pred, approx=2):
@@ -171,6 +168,14 @@ def mean_error(y_true, y_pred, approx=2):
     '''
     y_true, y_pred = np.array(y_true), np.array(y_pred)
     result = np.mean(y_true - y_pred)
+    return result.round(approx)
+
+def root_mean_squared_error(y_true, y_pred, approx=2):
+    '''
+    RMSE - błąd średniokwadratowy
+    '''
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    result = np.sqrt(np.mean((y_true - y_pred)**2))
     return result.round(approx)
 
 def mean_percentage_error(y_true, y_pred):
