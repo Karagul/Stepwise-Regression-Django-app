@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{%block content %}
+{% block content %}
 {% if user.is_authenticated %}
 <h2>Plik został zaimportowany</h2>
 <p>Zaimportowano <strong>{{shape_y}}</strong> kolumn oraz <strong>{{shape_x}}</strong> wierszy.</p>
@@ -53,9 +53,9 @@
 </form>
 <fieldset>
     <legend>Statystyki Opisowe</legend>
-    <h3>Macierz korelacji poszcególnych zmiennych</h3>
-    <div>
-        <img src="data:image/png;base64,{{corr_matrix}}" alt="Correlation Matrix" class="img-fluid">
+    <h3>Macierz korelacji wszystkich zmiennych:</h3>
+    <div id="statistics" class="table-responsive">
+        {{corr_matrix|safe}}
     </div>
     <h3>Statystyki opisowe oraz wykresy poszczególnych zmiennych:</h3>
     <div id="statistics" class="table-responsive">
@@ -96,6 +96,6 @@
     </div>
 </fieldset>
 {% else %}
-{% include "notLogged.html" %}
+    {% include "notLogged.html" %}
 {% endif %}
 {% endblock %}

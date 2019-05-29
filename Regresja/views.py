@@ -89,7 +89,8 @@ def dataParameters(request):
 
             return redirect('dataResults')
 
-    corr_matrix = dataset.corr()
+    # stworzenie macierzy korelacji i zapisanie jej w html
+    corr_matrix = dataset.corr().round(3).to_html(classes='table',border='0', justify='center')
     # corr_matrix = sr.correlationPlot(corr_matrix)
     try:
         # obliczenie statystyk opisowych z pomocą list comprahension
