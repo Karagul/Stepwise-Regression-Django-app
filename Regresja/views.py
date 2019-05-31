@@ -86,12 +86,14 @@ def dataParameters(request):
                 request.POST['treshold_out'])
             request.session['number_of_variables'] = int(
                 request.POST['Liczba_zmiennych'])
-
+            request.session['test_size']=float(request.POST['test_set_size'])/100
+            random_split=bool(request.POST['random_split'])
+            # ustawienie losowego podziału w zależności od wyboru użytkownika
+            request.session['random_split']=None if random_split else 1
             return redirect('dataResults')
 
     # stworzenie macierzy korelacji i zapisanie jej w html
-    corr_matrix = dataset.corr().round(3).to_html(classes='table',border='0', justify='center')
-    # corr_matrix = sr.correlationPlot(corr_matrix)
+    corr_matrix = dataset.corr().round(3).to_html(classes='table table-sm table-hover table-bordered',border='0', justify='center')
     try:
         # obliczenie statystyk opisowych z pomocą list comprahension
         dataset_summary = sr.dataset_statistic_summary(dataset_X, headers)
@@ -106,6 +108,7 @@ def dataParameters(request):
         'corr_matrix': corr_matrix,
         'dataset_summary': dataset_summary
     }
+
     return render(request, 'dataParameters.html', context=context)
 
 # widok wywoływany po przekierowaniu do /dataResults
@@ -114,6 +117,7 @@ def dataParameters(request):
 def dataResults(request):
 
     # sprawdzenie czy dataset został załadowany w sesji
+
     if 'dataset' not in request.session:
         return redirect('index')
 
@@ -129,8 +133,10 @@ def dataResults(request):
     dataset_X = dataset.drop(dataset.columns[target_variable], axis=1)
 
     # podział danych na zbiory train i test - test size i random state są ustalone przy implementacji metody
+    test_size = request.session['test_size']
+    random_state = request.session['random_split']
     X_train, X_test, y_train, y_test = sr.train_test_split_with_params(
-        dataset_X, dataset_y)
+        dataset_X, dataset_y,test_size,random_state)
 
     # ustalenie zmiennych wchodzących do modeli czterema metodami
     result_forward = sr.forward_selection(
@@ -165,6 +171,7 @@ def dataResults(request):
     all_summary = sr.ols_sum_table(
         y_test, y_predict_all, ols_all, result_all, 'Wszystkie zmienne objaśniające')
 
+    test_size_string=str(test_size*100)+'/'+str((1-test_size)*100)
     # zapisanie wszystkich podsumowań w jednej tablicy
     summary_of_all_methods = [forward_summary,
                               backward_summary, 
@@ -174,6 +181,7 @@ def dataResults(request):
     return render(request, 'dataResult.html', context={
         'summary_all': summary_of_all_methods,
         'number_of_variables': number_of_variables,
+        'test_size':test_size_string
     })
 
 # klasa obsługująca rejestrację użytkownika
@@ -184,8 +192,7 @@ class SignUp(generic.CreateView):
     template_name = 'signup.html'
 
 # obsługa błędów 404 oraz 500 - przekierowanie na stronę główną
-
-def handler404(request):
+def handler404(request,exception):
     return redirect('index')
 
 

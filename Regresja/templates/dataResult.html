@@ -1,42 +1,76 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <!-- Page Content -->
 {% if user.is_authenticated %}
     <div class="row">
         <div class="col-lg-12">
             <h1>Wyniki estymacji: </h1>
-            <p>Zmienne zostały losowo podzielone na dwa zbiory - treningowy i testowy, w stosunku 80/20</p>
-            <p>Wszystkie wartości poza średnimi błędami prognozy zostały wyliczone dla zbioru testowego</p>
+            <p>Zmienne zostały losowo podzielone na dwa zbiory - treningowy i testowy, w stosunku <strong{{test_size}}</strong></p>
             {% for method in summary_all %}
             <fieldset>
-                <legend>{{method.9}}</legend>
+                <legend>{{method.0}}</legend>
                 <div id="statistics" class="table-responsive">
-                    <table class="table">
+                <p>Parametry modelu oszacowanego na podstawie zbioru treningowego:</p>
+                    <table class="table table-sm table-hover table-bordered">
+                    <thead class="thead-dark">
                         <tr>
                             <th>Statystyka</th>
-                            {% for header in method.8 %}
+                            {% for header in method.1 %}
                             <th>{{header}}</th>
                             {% endfor %}
                         </tr>
+                    </thead>
+                    <tbody>
                         <tr>
                             <td>Oszacowanie parametru</td>
-                            {% for param in method.0 %}
+                            {% for param in method.2 %}
                             <td>{{param}}</td>
                             {% endfor %}
                         </tr>
                         <tr>
                             <td>Wartość p-value</td>
-                            {% for pval in method.1 %}
+                            {% for pval in method.3 %}
                             <td>{{pval}}</td>
                             {% endfor %}
                         </tr>
+                    </tbody>
                     </table>
-                    <p>Wartość statystyki R2: {{method.2}}</p>
-                    <p>Wartość statystyki R2 skorygowanego: {{method.3}}</p>
-                    <p>Wartość średniego błędu prognozy ME: {{method.4}}</p>
-                    <p>Wartość pierwiastka błędu średniokwadratowego RMSE: {{method.5}}</p>
-                    <p>Wartość średniego absolutnego błędu prognozy: {{method.6}}</p>
-                    <p>Wartość średniego procentowego absolutnego błędu prognozy: {{method.7}} %</p>
+                    <p>Wartość statystyki R2: {{method.4}}</p>
+                    <p>Wartość statystyki R2 skorygowanego: {{method.5}}</p>
+                    <hr>
+                    <p>Błędy szacunku prognoz na zbiorze testowym:</p>
+                        <table class="table table-sm table-hover table-bordered">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Wartości liczbowe</th>
+                            <th>Wartości procentowe</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Błąd średni ME</td>
+                            <td>{{method.6}}</td>
+                            <td>{{method.7}} %</td>
+                        </tr>
+                        <tr>
+                            <td>Średni błąd absolutny MAE</td>
+                            <td>{{method.8}}</td>
+                            <td>{{method.9}} %</td>
+                        </tr>
+                        <tr>
+                            <td>Błąd średniokwadratowy MSE</td>
+                            <td>{{method.10}}</td>
+                            <td>{{method.11}} %</td>
+                        </tr>
+                         <tr>
+                            <td>Pierwiastek błędu średniokwadratowego RMSE</td>
+                            <td>{{method.12}}</td>
+                            <td>{{method.13}} %</td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </fieldset>
             {% endfor %}

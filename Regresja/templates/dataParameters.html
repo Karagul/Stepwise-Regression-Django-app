@@ -11,44 +11,53 @@
 <fieldset>
     <!-- Form Name -->
     <legend>Wprowadź parametry</legend>
-    <h3>Aby przygotować modele regresji uzupełnij poniższe parametry. </h3>
-    <form method="post" enctype="multipart/form-data" class="form-horizontal">
-        {% csrf_token %}
-        <div class="row">
-            <!-- Text input-->
-            <div class="form-group">
-                <label class="col-md-12 control-label" for="textinput">Wartość p-value poniżej której
-                    zmienna
-                    będzie mogła zostać wprowadzona do modelu z wyborem zmiennych metodą <strong>Forward
-                        Selection</strong></label>
-                <div class="col-md-6">
+    <div class="form-group">
+        <h3>Aby przygotować modele regresji uzupełnij poniższe parametry. </h3>
+        <form method="post" enctype="multipart/form-data" class="form-horizontal">
+            {% csrf_token %}
+            <div class="form-row ">
+                <!-- Text input-->
+                <div class="col border-right p-2">
+                    <label class="control-label" for="textinput">Wartość p-value poniżej której
+                        zmienna
+                        będzie mogła zostać wprowadzona do modelu z wyborem zmiennych metodą <strong>Forward
+                            Selection</strong></label>
                     <input id="textinput1" value="0.05" class="form-control input-md" required type="number" min="0"
-                        max="1" step="0.001" name="treshold_in" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-md-12 control-label" for="textinput">Wartość p-value powyżej której
-                    zmienna
-                    zostanie usunięta z modelu z wyborem zmiennych metodą <strong>Backward Selection</strong> </label>
-                <div class="col-md-6">
-                    <input id="textinput2" value="0.05" class="form-control input-md" required type="number" min="0"
-                        max="1" step="0.001" name="treshold_out" required>
-                </div>
-            </div>
-            <!-- Text input-->
-            <div class="form-group">
-                <label class="col-md-12 control-label" for="textinput">Liczba zmiennych która zostanie wybrana do modelu
-                    z wyborem wybranej liczby najlepiej skorelowanych zmiennych</label>
-                <div class="col-md-6">
-                    <input id="textinput" value="3" class="form-control input-md" required type="text"
-                        name="Liczba_zmiennych" required>
-                </div>
-            </div>
-        </div>
+                        max="1" step="0.001" name="treshold_in">
 
-        <div>
-            <button type="submit" class="btn btn-primary">Zakończ konfiguracje</button>
-        </div>
+                </div>
+                <div class="col border-right p-2">
+                    <label class="control-label" for="textinput">Wartość p-value powyżej której
+                        zmienna
+                        zostanie usunięta z modelu z wyborem zmiennych metodą <strong>Backward Selection</strong>
+                    </label>
+                    <input id="textinput2" value="0.05" class="form-control input-md" required type="number" min="0"
+                        max="1" step="0.001" name="treshold_out">
+                </div>
+                <div class="col">
+                
+                    <label class="control-label" for="textinput">Liczba zmiennych która zostanie wybrana do modelu
+                        z wyborem wybranej liczby najlepiej skorelowanych zmiennych</label>
+                    <input id="textinput" value="3" class="form-control input-md" required type="number"
+                        name="Liczba_zmiennych">
+                </div>
+            </div>
+            <hr>
+            <div class="form-group">
+                <label class="control-label" for="textinput">Podaj jaki procent danych ma znaleść się w zbiorze testowym
+                    (1-99)</label>
+                <input id="textinput" value="30" class="form-control input-md" min="1" max="99" required type="number"
+                    name="test_set_size">
+
+                <div class="form-check">
+                    <input id="checkbox" type="checkbox" name="random_split" class="form-check-input">
+                    <label class="form-check-label" for="checkbox">Podział ma być wykonany losowo.</label>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Zakończ konfiguracje</button>
+            </div>
+    </div>
 </fieldset>
 </form>
 <fieldset>
@@ -58,44 +67,48 @@
         {{corr_matrix|safe}}
     </div>
     <h3>Statystyki opisowe oraz wykresy poszczególnych zmiennych:</h3>
-    <div id="statistics" class="table-responsive">
-        <table class="table">
-            <tr>
-                <th>Zmienna</th>
-                <th>Liczebność</th>
-                <th>Średnia</th>
-                <th>Odchylenie standardowe</th>
-                <th>Minimum</th>
-                <th>Kwantyl 0.25</th>
-                <th>Mediana</th>
-                <th>Kwantyl 0.75</th>
-                <th>Maximum</th>
-                <th>Wykres</th>
-            </tr>
-            {% for variable in dataset_summary %}
-            <tr>
-                <td class='thick'>{{variable.0}}</td>
-                <td>{{variable.1}}</td>
-                <td>{{variable.2}}</td>
-                <td>{{variable.3}}</td>
-                <td>{{variable.4}}</td>
-                <td>{{variable.5}}</td>
-                <td>{{variable.6}}</td>
-                <td>{{variable.7}}</td>
-                <td>{{variable.8}}</td>
-                <td>
-                    <form method="post" enctype="multipart/form-data" class="form-horizontal">
-                        {% csrf_token %}
-                        <input type="hidden" id="graph" name="graph" value="{{variable.0}}">
-                        <button type="submit" class="primary">Wykres</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
+    <div id="statistics" class="table-responsive ">
+        <table class="table table-sm table-hover table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Zmienna</th>
+                    <th>Liczebność</th>
+                    <th>Średnia</th>
+                    <th>Odchylenie standardowe</th>
+                    <th>Minimum</th>
+                    <th>Kwantyl 0.25</th>
+                    <th>Mediana</th>
+                    <th>Kwantyl 0.75</th>
+                    <th>Maximum</th>
+                    <th>Wykres</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for variable in dataset_summary %}
+                <tr>
+                    <th>{{variable.0}}</th>
+                    <td>{{variable.1}}</td>
+                    <td>{{variable.2}}</td>
+                    <td>{{variable.3}}</td>
+                    <td>{{variable.4}}</td>
+                    <td>{{variable.5}}</td>
+                    <td>{{variable.6}}</td>
+                    <td>{{variable.7}}</td>
+                    <td>{{variable.8}}</td>
+                    <td>
+                        <form method="post" enctype="multipart/form-data" class="form-horizontal">
+                            {% csrf_token %}
+                            <input type="hidden" id="graph" name="graph" value="{{variable.0}}">
+                            <button type="submit" class="primary">Wykres</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </fieldset>
 {% else %}
-    {% include "notLogged.html" %}
+{% include "notLogged.html" %}
 {% endif %}
 {% endblock %}

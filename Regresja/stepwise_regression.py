@@ -12,12 +12,9 @@ import pandas as pd
 
 
 # USTAWIENIE WSTĘPNYCH PARAMETRÓW
-# None - losowo, Int - określony seed, powtarzalne wyniki
-SEED_VALUE = 1
-# Należy również ustawić do ilu miejsc po przecinku zwracać wyniki
+# do ilu miejsc po przecinku zwracać wyniki
 APPROX = 3
-# Stosunek podziału train/test, wartość - % zbioru testowego
-TEST_VALUE = 0.2
+
 
 
 def forward_selection(X, y, threshold_in=0.05):
@@ -150,16 +147,20 @@ def ols_sum_table(y_true, y_pred, ols_model, headers, method_name):
     headers.insert(0, 'CONST')
     # zwrocenie listy z poszczególnymi statystykami
     return [
+        method_name,                                    # nazwa metody
+        headers,                                        # nazwy zmiennych
         list(ols_model.params.values.round(APPROX)),    # oszacowania parametrów
         list(ols_model.pvalues.values.round(APPROX)),   # lista z wartośćiami p-value
         ols_model.rsquared.round(APPROX),               # wartość r^2
         ols_model.rsquared_adj.round(APPROX),           # wartość skorygowanego r^2
-        mean_error(y_true,y_pred),                      # ME - błąd średni
-        root_mean_squared_error(y_true,y_pred),         # RMSE - pierwiastek błędu średniokwadratowego
-        mean_absolute_error(y_true, y_pred),            # MAE - średni błąd absolutny
-        mean_absolute_percentage_error(y_true, y_pred), # MAPE - średni procentowy błąd absolutny
-        headers,                                        # nazwy zmiennych
-        method_name                                     # nazwa metody
+        mean_error(y_true,y_pred),                         # ME
+        mean_percentage_error(y_true,y_pred),              # MPE
+        mean_absolute_error(y_true, y_pred),               # MAE
+        mean_absolute_percentage_error(y_true,y_pred),     # MAPE
+        mean_squared_error(y_true,y_pred),                 # MSE
+        mean_percentage_squared_error(y_true,y_pred),      # MSPE
+        root_mean_squared_error(y_true,y_pred),            # RMSE
+        root_mean_percentage_squared_error(y_true,y_pred), # RMSPE
     ]
 
 def mean_error(y_true, y_pred, approx=2):
@@ -167,24 +168,17 @@ def mean_error(y_true, y_pred, approx=2):
     ME - Błąd średni
     '''
     y_true, y_pred = np.array(y_true), np.array(y_pred)
-    result = np.mean(y_true - y_pred)
-    return result.round(approx)
-
-def root_mean_squared_error(y_true, y_pred, approx=2):
-    '''
-    RMSE - błąd średniokwadratowy
-    '''
-    y_true, y_pred = np.array(y_true), np.array(y_pred)
-    result = np.sqrt(np.mean((y_true - y_pred)**2))
-    return result.round(approx)
+    result = np.mean(y_pred - y_true)
+    return result.round(APPROX)
 
 def mean_percentage_error(y_true, y_pred):
     '''
     MPE - procentowy błąd średni
     '''
     y_true, y_pred = np.array(y_true), np.array(y_pred)
-    result = np.mean((y_true - y_pred)/y_true)*1000
-    return result.round(approx)
+    result = np.mean((y_pred - y_true)/y_true)*100
+    return result.round(APPROX)
+
 def mean_absolute_error(y_true, y_pred):
     '''
     Funkcja oblicza średni absolutny błąd prognozy.
@@ -194,7 +188,7 @@ def mean_absolute_error(y_true, y_pred):
     Zwraca: wartość MAE 
     '''
     y_true, y_pred = np.array(y_true), np.array(y_pred)
-    result = np.mean(np.abs(y_true - y_pred))
+    result = np.mean(np.abs(y_pred - y_true))
     return result.round(APPROX)
 
 
@@ -207,13 +201,51 @@ def mean_absolute_percentage_error(y_true, y_pred):
     Zwraca: wartość MAPE 
     '''
     y_true, y_pred = np.array(y_true), np.array(y_pred)
-    result = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+    result = np.mean(np.abs((y_pred - y_true) / y_true)) * 100
+    return result.round(APPROX)
+
+def mean_squared_error(y_true, y_pred):
+    '''
+    Funkcja oblicza średniokwadratowy błąd prognozy.
+    Argumenty:
+        y_true - rzeczywiste obserwacje zmiennej
+        y_pred - prognozowane obserwacje zmiennej
+    Zwraca: wartość MSE
+    '''
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    result = np.mean((y_pred - y_true)**2)
+    return result.round(APPROX)
+def root_mean_squared_error(y_true, y_pred, approx=2):
+    '''
+    RMSE - błąd średniokwadratowy
+    '''
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    result = np.sqrt(mean_squared_error(y_true,y_pred))
+    return result.round(APPROX)
+
+def mean_percentage_squared_error(y_true, y_pred):
+    '''
+    Funkcja oblicza średniokwadratowy błąd prognozy.
+    Argumenty:
+        y_true - rzeczywiste obserwacje zmiennej
+        y_pred - prognozowane obserwacje zmiennej
+    Zwraca: wartość MSE
+    '''
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    result = np.mean(((y_pred - y_true)/y_true)**2) * 100
+    return result.round(APPROX)
+def root_mean_percentage_squared_error(y_true, y_pred, approx=2):
+    '''
+    RMSE - błąd średniokwadratowy
+    '''
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    result = np.sqrt(mean_squared_error(y_true,y_pred))
     return result.round(APPROX)
 
 
 def convert_plot_to_bse64():
     '''
-    Funkcja do działania wymaga wcześniejszego stworzenia grafu za pomocą matplotlib.
+    Funkcja do działania wymaga wcześniejszego stworzenia grafu za pomocą biblioteki matplotlib.
     Po przekonwertowaniu wykresu, narysowany wykres zostaje wyczyszczony.
     '''
     # otworzenie bufora
@@ -259,8 +291,13 @@ def prepare_box_plot(dataset):
     return boxplot
 
 
-def train_test_split_with_params(dataset_X, dataset_y):
+def train_test_split_with_params(dataset_X, dataset_y, test_size, random_state):
+    '''
+    Funkcja dzieli datasety podane jako pierwsze dwa argumenty.
+    Test size - (0,1) - oznacza wielkość zbioru testowego
+    random_state - None - losowo, Int - określony seed, powtarzalne wyniki
+    '''
     return train_test_split(
         dataset_X, dataset_y, 
-        test_size=TEST_VALUE, 
-        random_state=SEED_VALUE)
+        test_size=test_size, 
+        random_state=random_state)
